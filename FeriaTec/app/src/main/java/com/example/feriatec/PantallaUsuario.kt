@@ -1,14 +1,22 @@
 package com.example.feriatec
 
 import MyJsonArrayRequest
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.graphics.drawable.ShapeDrawable
 import android.os.Bundle
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.solver.widgets.Rectangle
 import androidx.core.content.ContextCompat
 import com.android.volley.Request
 import com.android.volley.Response
@@ -21,6 +29,7 @@ import org.json.JSONObject
 
 class PantallaUsuario : AppCompatActivity() {
     lateinit var toggle: ActionBarDrawerToggle
+    lateinit var cliente: JSONObject
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,15 +41,20 @@ class PantallaUsuario : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navView.setNavigationItemSelectedListener {
             when(it.itemId){
-                R.id.Item1 -> Toast.makeText(this,"Clicked Item1",Toast.LENGTH_SHORT).show()
-                R.id.Item2 -> Toast.makeText(applicationContext,"Clicked Item2", Toast.LENGTH_SHORT).show()
-                R.id.Item3 -> Toast.makeText(applicationContext,"Clicked Item3", Toast.LENGTH_SHORT).show()
+                R.id.Item1 -> {
+                    val intent = Intent(this,Cart::class.java)
+                    intent.putExtra("Cliente", cliente.toString())
+                    finish()
+                    startActivity(intent)
+                }
+                R.id.Item2 -> Toast.makeText(applicationContext,"Ya se encuentra en productores", Toast.LENGTH_SHORT).show()
+                R.id.Item3 -> Toast.makeText(applicationContext,"Próximamente", Toast.LENGTH_SHORT).show()
             }
             true
         }
 
 
-        var cliente  = JSONObject(intent.getStringExtra("Cliente"))
+        cliente  = JSONObject(intent.getStringExtra("Cliente"))
         val url = "http://192.168.100.79/server/api/Productores/GetRegion"
         val queue = Volley.newRequestQueue(this)
         val jsonObject = JSONObject()
@@ -58,45 +72,73 @@ class PantallaUsuario : AppCompatActivity() {
         queue.add(JsonReq)
     }
     //Después de Obtener los productores
+    @SuppressLint("SetTextI18n")
     fun gotProducers(productores:JSONArray){
-        val layout = findViewById<RelativeLayout>(R.id.layouts)
-        var marginY = 100F
-        val marginX = 550F
+        val layout = findViewById<LinearLayout>(R.id.linearLay)
+        var marginY = 0F
+        val marginX = 50F
         for (i in 0 until productores.length()){
             val productor = productores[i] as JSONObject
             val imagen = ImageView(this.baseContext)
             val button = Button(this)
             val nombreProd = TextView(this)
-            val view = View(this)
-            view.background = ContextCompat.getDrawable(this,R.drawable.linea)
+            val localProd = TextView(this)
+            val telProd = TextView(this)
+            val cuadro = TextView(this)
+            //Cuadro
+            cuadro.width=1080
+            cuadro.height = 500
+            cuadro.x = 5F
+            cuadro.y = marginY - 500
+            cuadro.background = ContextCompat.getDrawable(this,R.drawable.linea)
 
+            //Localidad
+            localProd.setText("-Ubicación: ${productor.getString("provincia")}, ${productor.getString("canton")}, \n ${productor.getString("distrito")}")
+            localProd.x = marginX
+            localProd.y= marginY - 240
+            localProd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16F)
+
+            //Telefono Productor
+            telProd.setText("-Teléfono: ${productor.getString("telefono")}")
+            telProd.x = marginX
+            telProd.y = marginY-280
+            telProd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16F)
 
             //Nombre Productor
             nombreProd.setText("${productor.getString("nombre")} ${productor.getString("apellidos")}")
-            nombreProd.x=marginX-500
-            nombreProd.y=marginY + 70
+            nombreProd.x=marginX
+            nombreProd.y=marginY-300
             nombreProd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20F)
+            nombreProd.setTypeface(null,Typeface.BOLD)
+            nombreProd.setGravity(Gravity.LEFT)
+
             //Boton
             button.setOnClickListener{
-                textView.text = productor.getString("nombre")
+                val intent = Intent(this, Productos::class.java)
+                intent.putExtra("Productor", productor.toString())
+                intent.putExtra("Cliente", cliente.toString())
+                startActivity(intent)
             }
-            button.x = marginX + 130
-            button.y = marginY + 350
+            button.x = marginX
+            button.y = marginY + 120
+            button.layoutParams = ViewGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             button.text = "Ver Productos"
             button.background = ContextCompat.getDrawable(this,R.drawable.round_button)
             button.setTextColor(Color.rgb(255,255,255))
             //Imagen
-            imagen.layoutParams = LinearLayout.LayoutParams(400,400)
-            imagen.x = marginX + 50
-            imagen.y = marginY
-            marginY += 500
+            imagen.layoutParams = LinearLayout.LayoutParams(400,325)
+            imagen.x = marginX + 550
+            imagen.y = marginY + 200
             Picasso.get().load(productor.getString("foto")).into(imagen)
+
             //Agregar al layout
+            marginY -= 500
             layout.addView(imagen)
             layout.addView(button)
             layout.addView(nombreProd)
-            layout.addView(view)
-            //layout.background = ContextCompat.getDrawable(this,R.drawable.linea)
+            layout.addView(telProd)
+            layout.addView(localProd)
+            layout.addView(cuadro)
         }
     }
 

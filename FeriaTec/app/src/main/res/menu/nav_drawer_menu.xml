@@ -2,14 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/Item1"
-        android:title="Item 1">
+        android:title="Carrito"
+        android:icon="@drawable/ic_baseline_shopping_cart_24">
     </item>
     <item
         android:id="@+id/Item2"
-        android:title="Item 2">
+        android:title="Productores"
+        android:icon="@drawable/ic_baseline_storefront_24">
     </item>
     <item
         android:id="@+id/Item3"
-        android:title="Item 3">
+        android:title="Mis Pedidos"
+        android:icon="@drawable/ic_baseline_attach_money_24">
     </item>
 </menu>
