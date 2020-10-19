@@ -4,6 +4,7 @@ import MyJsonArrayRequest
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.TypedValue
@@ -11,6 +12,7 @@ import android.view.Gravity
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -25,12 +27,18 @@ import kotlinx.android.synthetic.main.activity_pantalla_usuario.drawer_layout
 import kotlinx.android.synthetic.main.activity_pantalla_usuario.navView
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.NumberFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class Cart : AppCompatActivity() {
     lateinit var toggle: ActionBarDrawerToggle
     lateinit var cliente: JSONObject
     lateinit var productos: JSONArray
+    lateinit var urlRec: String
     var total: Int = 0
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cart)
@@ -38,20 +46,33 @@ class Cart : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        cliente  = JSONObject(intent.getStringExtra("Cliente"))
+        urlRec = intent.getStringExtra("url").toString()
         navView.setNavigationItemSelectedListener {
             when(it.itemId){
                 R.id.Item1 -> Toast.makeText(this,"Ya se encuentra en el carrito", Toast.LENGTH_SHORT).show()
                 R.id.Item2 -> {
                     val intent = Intent(this,PantallaUsuario::class.java)
                     intent.putExtra("Cliente", cliente.toString())
+                    intent.putExtra("url",urlRec)
                     finish()
                     startActivity(intent)
                 }
-                R.id.Item3 -> Toast.makeText(applicationContext,"Próximamente", Toast.LENGTH_SHORT).show()
+                R.id.Item3 -> {
+                    val intent = Intent(this,Pedidos::class.java)
+                    intent.putExtra("Cliente", cliente.toString())
+                    intent.putExtra("url", urlRec)
+                    finish()
+                    startActivity(intent)
+                }
+                R.id.Item4 -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    finish()
+                    startActivity(intent)
+                }
             }
             true
         }
-        cliente  = JSONObject(intent.getStringExtra("Cliente"))
         val header = navView.getHeaderView(0)
         val user = header.findViewById<TextView>(R.id.NombreCliente)
         user.setText(cliente.getString("usuario"))
@@ -60,6 +81,9 @@ class Cart : AppCompatActivity() {
         val layout = findViewById<LinearLayout>(R.id.linearLay)
         var marginY = -150F
         val marginX = 50F
+        val format: NumberFormat = NumberFormat.getCurrencyInstance()
+        format.setMaximumFractionDigits(0)
+        format.setCurrency(Currency.getInstance("CRC"))
 
         for (i in 0 until productos.length()){
             val producto = productos[i] as JSONObject
@@ -103,7 +127,7 @@ class Cart : AppCompatActivity() {
             modoProd.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16F)
 
             //Precio
-            precioProd.setText("₡ ${producto.getString("precio")}")
+            precioProd.setText(format.format(producto.getString("precio").toInt()))
             precioProd.x = marginX
             precioProd.y= marginY - 430
             precioProd.setTypeface(null, Typeface.BOLD_ITALIC)
@@ -163,7 +187,10 @@ class Cart : AppCompatActivity() {
             layout.addView(cuadro)
 
         }
-        totalText.setText(" \n Total: ₡ $total")
+        comprarBt.setOnClickListener{
+            comprar()
+        }
+        totalText.setText(" \n Total: ${format.format(total)}")
     }
     fun eliminar(producto: JSONObject){
         val carrito = cliente.getJSONArray("carrito")
@@ -210,24 +237,94 @@ class Cart : AppCompatActivity() {
             }
             cont++
         }
-        producto.put("cantidad",(producto.getString("cantidad").toInt() +1).toString())
-        carrito.remove(cont)
-        carrito.put(producto)
-        cliente.put("carrito",carrito)
-        modify()
+        if(producto.getString("disponibilidad").toInt() > producto.getString("cantidad").toInt()){
+            producto.put("cantidad",(producto.getString("cantidad").toInt() +1).toString())
+            carrito.remove(cont)
+            carrito.put(producto)
+            cliente.put("carrito",carrito)
+            modify()
+        }
+        else{
+            Toast.makeText(applicationContext,"Lo sentimos, de momento solo hay ${producto.getString("disponibilidad")} disponibles", Toast.LENGTH_SHORT).show()
+        }
     }
     fun modify(){
         val queue = Volley.newRequestQueue(this)
         val JsonReq = MyJsonArrayRequest(
-            Request.Method.POST,"http://192.168.100.79/server/api/Clientes/modify",cliente,
+            Request.Method.POST,"${urlRec}server/api/Clientes/modify",cliente,
             Response.Listener<JSONArray> { response-> },
             Response.ErrorListener {
-                Toast.makeText(this,"Carrito actualizado exitosamente", Toast.LENGTH_LONG).show()
+                Toast.makeText(this,"Carrito actualizado exitosamente", Toast.LENGTH_SHORT).show()
                 intent.putExtra("Cliente",cliente.toString())
+                intent.putExtra("url",urlRec)
                 finish()
                 startActivity(getIntent())
             })
         queue.add(JsonReq)
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun comprar(){
+        val currentDateTime = LocalDateTime.now()
+        var carrito = cliente.getJSONArray("carrito")
+        var lista:JSONArray = JSONArray()
+        if(carrito.isNull(0)){
+            Toast.makeText(applicationContext,"No hay productos en el carrito", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val primProd = carrito[0] as JSONObject
+        for(i in 0 until carrito.length()) {
+            val prod = carrito[i] as JSONObject
+            if (prod.getString("productor") != primProd.getString("productor")){
+                Toast.makeText(applicationContext,"Lo sentimos, de momento solo se pueden hacer compras de un productor a la vez.", Toast.LENGTH_SHORT).show()
+                return
+            }
+            prod.put("disponibilidad", (prod.getString("disponibilidad").toInt() - prod.getString("cantidad").toInt()).toString())
+            var temp = prod;
+            var cant = prod.getString("cantidad")
+            lista.put(prod)
+            temp.put("cantidad","0")
+            println(temp.toString())
+            val queue0 = Volley.newRequestQueue(this)
+            val JsonReq0 = MyJsonArrayRequest(
+                Request.Method.POST,"${urlRec}server/api/Productos/modify",temp,
+                Response.Listener<JSONArray> { response-> },
+                Response.ErrorListener {})
+            queue0.add(JsonReq0)
+            prod.put("cantidad",cant)
+        }
+        var pedido = JSONObject()
+        pedido.put("listado",lista)
+        pedido.put("nombre",cliente.getString("nombre"))
+        pedido.put("apellidos", cliente.getString("apellidos"))
+        pedido.put("direccion", cliente.getString("direccion"))
+        pedido.put("provincia", cliente.getString("provincia"))
+        pedido.put("canton", cliente.getString("canton"))
+        pedido.put("distrito", cliente.getString("distrito"))
+        pedido.put("cedula", cliente.getString("cedula"))
+        pedido.put("fecha", currentDateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyy")).toString())
+        pedido.put("productor", primProd.getString("productor"))
+        pedido.put("comentarios", InfoAd.text.toString())
+        val queue = Volley.newRequestQueue(this)
+        val JsonReq = MyJsonArrayRequest(
+            Request.Method.POST,"${urlRec}server/api/Pedidos/insert",pedido,
+            Response.Listener<JSONArray> { response->  },
+            Response.ErrorListener {
+                Toast.makeText(this,"Pedido realizado exitosamente", Toast.LENGTH_LONG).show()
+                })
+        queue.add(JsonReq)
+        carrito = JSONArray()
+        productos = JSONArray()
+        cliente.put("carrito",carrito)
+        val queue2 = Volley.newRequestQueue(this)
+        val JsonReq2 = MyJsonArrayRequest(
+            Request.Method.POST,"${urlRec}server/api/Clientes/modify",cliente,
+            Response.Listener<JSONArray> { response->  },
+            Response.ErrorListener {})
+        queue2.add(JsonReq2)
+        intent.putExtra("Cliente",cliente.toString())
+        intent.putExtra("url",urlRec)
+        finish()
+        startActivity(getIntent())
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(toggle.onOptionsItemSelected(item)){

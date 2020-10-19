@@ -14,13 +14,14 @@
 
         <ScrollView
             android:id="@+id/scrollView2"
-            android:layout_width="411dp"
-            android:layout_height="723dp"
+            android:layout_width="407dp"
+            android:layout_height="653dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintHorizontal_bias="0.25"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.238">
 
             <LinearLayout
                 android:id="@+id/linearLay"
@@ -30,7 +31,7 @@
         </ScrollView>
 
         <Button
-            android:id="@+id/comprar"
+            android:id="@+id/comprarBt"
             android:layout_width="395dp"
             android:layout_height="49dp"
             android:background="@drawable/round_button_orange"
@@ -41,9 +42,7 @@
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scrollView2"
-            app:layout_constraintVertical_bias="0.769" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/totalText"
@@ -61,6 +60,24 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="404dp"
+            android:layout_height="94dp"
+            android:layout_marginTop="24dp"
+            app:layout_constraintBottom_toTopOf="@+id/comprarBt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.428"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/scrollView2"
+            app:layout_constraintVertical_bias="1.0">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/InfoAd"
+                android:layout_width="match_parent"
+                android:layout_height="81dp"
+                android:hint="Instrucciones Adicionales" />
+        </com.google.android.material.textfield.TextInputLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

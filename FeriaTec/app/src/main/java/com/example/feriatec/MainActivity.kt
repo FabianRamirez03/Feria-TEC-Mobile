@@ -25,7 +25,11 @@ class MainActivity : AppCompatActivity() {
         val url = "http://192.168.100.79/server/api/Clientes/getlogin"
         val queue = Volley.newRequestQueue(this)
         val jsonObject = JSONObject()
+        acceder.visibility = View.VISIBLE
+        loading.visibility = View.INVISIBLE
         acceder.setOnClickListener{
+            acceder.visibility = View.INVISIBLE
+            loading.visibility = View.VISIBLE
             var usuario = usuario.text
             var password = password.text
             jsonObject.put("usuario",usuario)
@@ -34,14 +38,26 @@ class MainActivity : AppCompatActivity() {
                 if(response != null){
                     val intent = Intent(this, PantallaUsuario::class.java)
                     intent.putExtra("Cliente", response.toString())
+                    intent.putExtra("url", "http://192.168.100.79/")
+                    finish()
                     startActivity(intent)
                 }
-            },Response.ErrorListener {Toast.makeText(this,"Usuario o contraseña incorrecta", Toast.LENGTH_LONG).show() })
+            },Response.ErrorListener {Toast.makeText(this,"Usuario o contraseña incorrecta", Toast.LENGTH_LONG).show()
+                acceder.visibility = View.VISIBLE
+                loading.visibility = View.INVISIBLE})
             queue.add(stringRequest)
 
         }
+        nuevaCuenta.setOnClickListener{
+            val intent = Intent(this, CrearCuenta::class.java)
+            intent.putExtra("url", "http://192.168.100.79/")
+            startActivity(intent)
+        }
     }
 
+    override fun onBackPressed() {
+        return
+    }
 
 
 }
