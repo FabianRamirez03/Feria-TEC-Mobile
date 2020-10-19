@@ -43,6 +43,7 @@ class CrearCuenta : AppCompatActivity() {
         jsonObject.put("password", passwordInput.text.toString())
         jsonObject.put("nacimiento", nacimientoInput.text.toString())
         jsonObject.put("telefono", telefonoInput.text.toString())
+        jsonObject.put("carrito",JSONArray())
         val JsonReq = MyJsonArrayRequest(
             Request.Method.POST,url,jsonObject,
             Response.Listener<JSONArray> { response-> },

@@ -16,6 +16,11 @@
         android:icon="@drawable/ic_baseline_attach_money_24">
     </item>
     <item
+        android:id="@+id/Item5"
+        android:title="Gestionar Cuenta"
+        android:icon="@drawable/ic_baseline_settings_24">
+    </item>
+    <item
         android:id="@+id/Item4"
         android:title="Cerrar Sesión"
         android:icon="@drawable/ic_logout">

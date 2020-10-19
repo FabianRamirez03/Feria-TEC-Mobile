@@ -27,6 +27,7 @@ import kotlinx.android.synthetic.main.activity_pantalla_usuario.drawer_layout
 import kotlinx.android.synthetic.main.activity_pantalla_usuario.navView
 import org.json.JSONArray
 import org.json.JSONObject
+import java.lang.Exception
 import java.text.NumberFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -70,13 +71,25 @@ class Cart : AppCompatActivity() {
                     finish()
                     startActivity(intent)
                 }
+                R.id.Item5 -> {
+                    val intent = Intent(this,ModificarCuenta::class.java)
+                    intent.putExtra("Cliente", cliente.toString())
+                    intent.putExtra("url", urlRec)
+                    startActivity(intent)
+                }
             }
             true
         }
         val header = navView.getHeaderView(0)
         val user = header.findViewById<TextView>(R.id.NombreCliente)
         user.setText(cliente.getString("usuario"))
-        productos = cliente.getJSONArray("carrito")
+        try{
+            productos = cliente.getJSONArray("carrito")
+        }
+        catch (e:Exception){
+            cliente.put("carrito",JSONArray())
+            productos = cliente.getJSONArray("carrito")
+        }
 
         val layout = findViewById<LinearLayout>(R.id.linearLay)
         var marginY = -150F

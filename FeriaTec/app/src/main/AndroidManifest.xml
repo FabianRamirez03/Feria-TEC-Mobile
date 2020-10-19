@@ -13,7 +13,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CrearCuenta"></activity>
+        <activity android:name=".ModificarCuenta"></activity>
+        <activity android:name=".CrearCuenta" />
         <activity android:name=".DetallesPedidos" />
         <activity android:name=".Pedidos" />
         <activity android:name=".Cart" />

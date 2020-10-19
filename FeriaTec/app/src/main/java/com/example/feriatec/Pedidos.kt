@@ -57,6 +57,12 @@ class Pedidos : AppCompatActivity() {
                     finish()
                     startActivity(intent)
                 }
+                R.id.Item5 -> {
+                    val intent = Intent(this,ModificarCuenta::class.java)
+                    intent.putExtra("Cliente", cliente.toString())
+                    intent.putExtra("url", urlRec)
+                    startActivity(intent)
+                }
             }
             true
         }
