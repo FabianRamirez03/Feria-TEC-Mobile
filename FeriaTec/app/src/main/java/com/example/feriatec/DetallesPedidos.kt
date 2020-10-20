@@ -105,7 +105,7 @@ class DetallesPedidos : AppCompatActivity() {
         productor = productorEntrada
         comprobanteView.setText("Comprobante No. ${pedido.getString("comprobante")}")
         productorView.setText("Productor: ${productor.getString("nombre")} ${productor.getString("apellidos")}")
-        telefonoView.setText("Teléfono: ${pedido.getString("telefono")}")
+        telefonoView.setText("Teléfono: ${productor.getString("telefono")}")
         fechaView.setText("Fecha de Compra: ${pedido.getString("fecha")}")
         estadoView.setText("Estado del Pedido: ${pedido.getString("estado")}")
         direccionView.setText("Dirección de entrega: \n ${pedido.getString("direccion")}")

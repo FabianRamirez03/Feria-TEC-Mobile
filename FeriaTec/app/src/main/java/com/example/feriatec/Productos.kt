@@ -157,6 +157,10 @@ class Productos : AppCompatActivity() {
 
             //Boton
             button.setOnClickListener {
+                if (producto.getString("disponibilidad").toInt() <= 0){
+                    Toast.makeText(this,"Lo sentimos no hay más unidades disponibles de este producto.", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
                 var found = false
                 var cont = 0
                 for (i in 0 until carrito.length()){
